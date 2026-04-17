@@ -76,7 +76,7 @@ public class ChainExecutor {
     // 同步执行
     public Map<String, Object> execute(String definitionId, Map<String, Object> variables, long timeout, TimeUnit unit) {
         Chain chain = createChain(definitionId);
-        String stateInstanceId = chain.getStateInstanceId();
+        String stateInstanceId = chain.getStateInstanceId();    //UUID
         CompletableFuture<Map<String, Object>> future = new CompletableFuture<>();
 
         ChainEventListener listener = (event, c) -> {

@@ -204,7 +204,7 @@ public class Chain {
         }
     }
 
-
+    //开启工作流
     public void start(Map<String, Object> variables) {
         Trigger prev = TriggerContext.getCurrentTrigger();
         try {
