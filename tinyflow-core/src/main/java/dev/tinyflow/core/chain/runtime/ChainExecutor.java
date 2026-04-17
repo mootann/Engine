@@ -30,9 +30,6 @@ import java.util.*;
 import java.util.concurrent.*;
 
 /**
- * TinyFlow 最新 ChainExecutor
- * <p>
- * 说明:
  * * 负责触发 Chain 执行 / 恢复
  * * 不持有长时间运行的 Chain 实例
  * * 支持 async-only 架构

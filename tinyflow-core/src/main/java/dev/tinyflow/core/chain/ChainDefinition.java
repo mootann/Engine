@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-
 public class ChainDefinition implements Serializable {
     protected String id;
     protected String name;
@@ -105,16 +104,6 @@ public class ChainDefinition implements Serializable {
         }
 
         nodes.add(node);
-
-//        if (this.edges != null) {
-//            for (Edge edge : edges) {
-//                if (node.getId().equals(edge.getSource())) {
-//                    node.addOutwardEdge(edge);
-//                } else if (node.getId().equals(edge.getTarget())) {
-//                    node.addInwardEdge(edge);
-//                }
-//            }
-//        }
     }
 
 
@@ -138,20 +127,6 @@ public class ChainDefinition implements Serializable {
             this.edges = new ArrayList<>();
         }
         this.edges.add(edge);
-
-//        boolean findSource = false, findTarget = false;
-//        for (Node node : this.nodes) {
-//            if (node.getId().equals(edge.getSource())) {
-//                node.addOutwardEdge(edge);
-//                findSource = true;
-//            } else if (node.getId().equals(edge.getTarget())) {
-//                node.addInwardEdge(edge);
-//                findTarget = true;
-//            }
-//            if (findSource && findTarget) {
-//                break;
-//            }
-//        }
     }
 
 
@@ -172,9 +147,6 @@ public class ChainDefinition implements Serializable {
         List<Node> result = new ArrayList<>();
 
         for (Node node : nodes) {
-//            if (CollectionUtil.noItems(node.getInwardEdges())) {
-//                result.add(node);
-//            }
             List<Edge> inwardEdge = getInwardEdge(node.getId());
             if (inwardEdge == null || inwardEdge.isEmpty()) {
                 result.add(node);

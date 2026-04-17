@@ -1,7 +1,18 @@
 {
   "permissions": {
     "allow": [
-      "Skill(keybindings-help)"
+      "WebFetch(domain:skillhub.cn)",
+      "Bash(curl -fsSL https://skillhub-1388575217.cos.ap-guangzhou.myqcloud.com/install/install.sh)",
+      "Bash(bash)",
+      "Bash(skillhub list *)",
+      "WebSearch",
+      "Bash(mvn clean *)",
+      "mcp__MiniMax__web_search",
+      "Bash(mvn dependency:tree -pl tinyflow-support-springai)",
+      "Bash(mvn dependency:tree -pl tinyflow-support-springai -Dincludes=org.springframework.ai)",
+      "Bash(mvn dependency:build-classpath -pl tinyflow-support-springai -Dmdep.outputFile=/tmp/classpath.txt)",
+      "Read(//tmp/**)",
+      "Bash(unzip -l \"D:\\\\ProgramData\\\\local\\\\repo\\\\org\\\\springframework\\\\ai\\\\spring-ai-openai\\\\1.0.0-M6\\\\spring-ai-openai-1.0.0-M6.jar\")"
     ]
   }
 }
