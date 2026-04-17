@@ -37,13 +37,11 @@ public class ChainRuntime {
                     new LinkedBlockingQueue<>(10000),
                     r -> new Thread(r, "tinyflow-node-exec"));
 
-
     private static final TriggerScheduler TRIGGER_SCHEDULER = new TriggerScheduler(
             new InMemoryTriggerStore()
             , scheduler
             , ASYNC_NODE_EXECUTORS
             , 10000L);
-
 
     public static TriggerScheduler triggerScheduler() {
         return TRIGGER_SCHEDULER;

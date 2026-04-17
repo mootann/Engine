@@ -31,10 +31,6 @@ public abstract class Node implements Serializable {
     protected String parentId;
     protected String name;
     protected String description;
-
-//    protected List<Edge> inwardEdges;
-//    protected List<Edge> outwardEdges;
-
     protected NodeCondition condition;
     protected NodeValidator validator;
 
@@ -84,22 +80,6 @@ public abstract class Node implements Serializable {
         this.description = description;
     }
 
-//    public List<Edge> getInwardEdges() {
-//        return inwardEdges;
-//    }
-//
-//    public void setInwardEdges(List<Edge> inwardEdges) {
-//        this.inwardEdges = inwardEdges;
-//    }
-//
-//    public List<Edge> getOutwardEdges() {
-////        return outwardEdges;
-//    }
-//
-//    public void setOutwardEdges(List<Edge> outwardEdges) {
-//        this.outwardEdges = outwardEdges;
-//    }
-
     public NodeCondition getCondition() {
         return condition;
     }
@@ -115,20 +95,6 @@ public abstract class Node implements Serializable {
     public void setValidator(NodeValidator validator) {
         this.validator = validator;
     }
-
-//    protected void addOutwardEdge(Edge edge) {
-//        if (this.outwardEdges == null) {
-//            this.outwardEdges = new ArrayList<>();
-//        }
-//        this.outwardEdges.add(edge);
-//    }
-//
-//    protected void addInwardEdge(Edge edge) {
-//        if (this.inwardEdges == null) {
-//            this.inwardEdges = new ArrayList<>();
-//        }
-//        this.inwardEdges.add(edge);
-//    }
 
     public boolean isLoopEnable() {
         return loopEnable;
@@ -236,7 +202,6 @@ public abstract class Node implements Serializable {
     }
 
     protected long doCalculateComputeCost(String expr, Chain chain, Map<String, Object> result) {
-//        Map<String, Object> parameterValues = chain.getState().getParameterValuesOnly(this, this.getParameters(), null);
         Map<String, Object> parameterValues = chain.getState().resolveParameters(this, this.getParameters(), null,true);
         Map<String, Object> newMap = new HashMap<>(result);
         newMap.putAll(parameterValues);

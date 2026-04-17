@@ -28,17 +28,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
-
 public class Chain {
 
     private static final Logger log = LoggerFactory.getLogger(Chain.class);
     private static final ThreadLocal<Chain> EXECUTION_THREAD_LOCAL = new ThreadLocal<>();
 
-
     protected final ChainDefinition definition;
     protected String stateInstanceId;
 
-    //    protected final ChainState state;
     protected ChainStateRepository chainStateRepository;
     protected NodeStateRepository nodeStateRepository;
     protected EventManager eventManager;
@@ -245,12 +242,13 @@ public class Chain {
         }
     }
 
+    //执行当前节点
     public void executeNode(Node node, Trigger trigger) {
         try {
-            EXECUTION_THREAD_LOCAL.set(this);
+            EXECUTION_THREAD_LOCAL.set(this);    // 设置线程上下文
             ChainState chainState = getState();
 
-            // 当前处于挂起状态
+            // 1. 检查状态（是否挂起、是否运行中）
             if (chainState.getStatus() == ChainStatus.SUSPEND) {
                 updateStateSafely(state -> {
                     chainState.addSuspendNodeId(node.getId());
@@ -262,7 +260,7 @@ public class Chain {
             else if (chainState.getStatus() != ChainStatus.RUNNING) {
                 return;
             }
-
+            // 2. 检查节点条件（是否需要跳过）
             String triggerEdgeId = trigger.getEdgeId();
             if (shouldSkipNode(node, triggerEdgeId)) {
                 return;
@@ -275,6 +273,7 @@ public class Chain {
 
                 // 如果节点状态不是运行中，则更新为运行中
                 // 目前只有 Loop 节点会处于 Running 状态，因为它会多次触发
+                // 3. 更新节点状态为运行中
                 if (nodeState.getStatus() != NodeStatus.RUNNING) {
                     updateNodeStateSafely(node.id, s -> {
                         s.setStatus(NodeStatus.RUNNING);
@@ -362,11 +361,11 @@ public class Chain {
         NodeStatus finalNodeStatus = null;
         try {
             if (error == null) {
-                // 更新 state 数据
+                // 1. 保存执行结果到内存（供后续节点使用）
                 updateStateSafely(state -> {
                     EnumSet<ChainStateField> fields = EnumSet.of(ChainStateField.EXECUTE_RESULT);
                     state.setExecuteResult(prevNodeResult);
-
+                    // 结果以 "nodeId.key" 形式存入内存
                     if (prevNodeResult != null && !prevNodeResult.isEmpty()) {
                         prevNodeResult.forEach((k, v) -> {
                             if (v != null) {
@@ -388,19 +387,19 @@ public class Chain {
 
                 finalNodeStatus = prevNodeResult == null ? null : (NodeStatus) prevNodeResult.get(ChainConsts.NODE_STATE_STATUS_KEY);
 
-                // 不调度下一个节点，由 node 自行调度，比如 Loop 循环
+                // 2. 检查是否需要禁用自动调度（如 Loop 节点自行控制）
                 Boolean scheduleNextNodeDisabled = prevNodeResult == null ? null : (Boolean) prevNodeResult.get(ChainConsts.SCHEDULE_NEXT_NODE_DISABLED_KEY);
                 if (scheduleNextNodeDisabled != null && scheduleNextNodeDisabled) {
-                    return;
+                    return;      // 节点自行控制后续调度
                 }
 
-                // 结束节点
+                // 3. 检查是否是结束节点
                 finalChainStatus = prevNodeResult != null ? (ChainStatus) prevNodeResult.get(ChainConsts.CHAIN_STATE_STATUS_KEY) : null;
                 if (finalChainStatus != null && finalChainStatus.isTerminal()) {
-                    return;
+                    return;     // 工作流结束
                 }
 
-                // 调度下一个节点
+                // 4. 调度下一个节点（核心路由逻辑）
                 scheduleNextForNode(node, prevNodeResult, triggerEdgeId);
             } else {
                 // 挂起
@@ -447,7 +446,6 @@ public class Chain {
                 }
             }
         } catch (Exception e) {
-            // 在 scheduleNextForNode 执行时， js 判断等可能会出错。
             finalNodeStatus = NodeStatus.FAILED;
             finalChainStatus = handleNodeError(node.id, e);
         } finally {
@@ -526,9 +524,11 @@ public class Chain {
 
 
     private void scheduleOutwardNodes(Node node, Map<String, Object> result) {
+        // 1. 获取所有出边
         List<Edge> edges = definition.getOutwardEdge(node.getId());
+
+        // 2. 无出边时回归父节点（支持嵌套 Loop）
         if (!CollectionUtil.hasItems(edges)) {
-            // 当前节点没有向外的边，则调度父节点（自动回归父节点） 用在 Loop 循环等场景
             if (StringUtil.hasText(node.getParentId())) {
                 Node parent = definition.getNodeById(node.getParentId());
                 scheduleNode(parent, null, TriggerType.PARENT, 0L);
@@ -536,7 +536,7 @@ public class Chain {
             return;
         }
 
-        // 检查所有向外的边是不是同一个父节点
+        // 3. 遍历所有出边，检查条件并调度
         boolean allNotSameParent = false;
         boolean scheduleSuccess = false;
         for (Edge edge : edges) {
@@ -554,6 +554,7 @@ public class Chain {
             allNotSameParent = false;
             EdgeCondition edgeCondition = edge.getCondition();
             if (edgeCondition == null) {
+                // 无条件边：直接调度
                 scheduleNode(nextNode, edge.getId(), TriggerType.NEXT, 0L);
                 scheduleSuccess = true;
                 continue;
@@ -606,6 +607,7 @@ public class Chain {
 
 
     public void scheduleNode(Node node, String edgeId, TriggerType type, long delayMs) {
+        // 1. 创建触发器
         Trigger trigger = new Trigger();
         trigger.setStateInstanceId(stateInstanceId);
         trigger.setEdgeId(edgeId);
@@ -622,6 +624,7 @@ public class Chain {
             eventManager.notifyEvent(new EdgeTriggerEvent(this, trigger), this);
         }
 
+        // 2. 提交到调度器
         getTriggerScheduler().schedule(trigger);
     }
 

@@ -26,7 +26,6 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- *
  * 功能:
  * - schedule trigger (持久化到 TriggerStore 并 schedule)
  * - cancel trigger
@@ -145,6 +144,7 @@ public class TriggerScheduler {
             prev.cancel(false);
         }
 
+        // 使用 ScheduledExecutorService 延迟执行
         ScheduledFuture<?> future = scheduler.schedule(() -> {
             // double-check existence in store (可能已被 cancel)
             Trigger existing = store.find(trigger.getId());
@@ -152,18 +152,18 @@ public class TriggerScheduler {
                 scheduledFutures.remove(trigger.getId());
                 return;
             }
-
+            // 延迟时间到达后，提交到 worker 线程池执行
             if (consumer != null) {
                 worker.submit(() -> {
                     try {
                         TriggerContext.setCurrentTrigger(existing);
-                        consumer.accept(existing, worker);
+                        consumer.accept(existing, worker);   // 实际执行业务逻辑
                     } catch (Throwable e) {
                         log.error(e.toString(), e);
                     } finally {
                         TriggerContext.clearCurrentTrigger();
                         store.remove(existing.getId());
-                        scheduledFutures.remove(existing.getId());
+                        scheduledFutures.remove(existing.getId());   // 执行完成，移除存储
                     }
                 });
             } else {
@@ -171,7 +171,7 @@ public class TriggerScheduler {
                 store.remove(existing.getId());
                 scheduledFutures.remove(existing.getId());
             }
-        }, delay, TimeUnit.MILLISECONDS);
+        }, delay, TimeUnit.MILLISECONDS);    // delay = 0，立即到期
 
         scheduledFutures.put(trigger.getId(), future);
     }

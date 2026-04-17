@@ -21,9 +21,9 @@ public class Trigger implements Serializable {
     private String id;
     private String stateInstanceId;
     private String edgeId;
-    private String nodeId; // 可以为 null，代表触发整个 chain
+    private String nodeId;      // 可以为 null，代表触发整个 chain
     private TriggerType type;
-    private long triggerAt; // epoch ms
+    private long triggerAt;     // epoch ms
 
     public Trigger() {
     }

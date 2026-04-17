@@ -73,7 +73,7 @@ public class ChainExecutor {
         return execute(definitionId, variables, Long.MAX_VALUE, TimeUnit.SECONDS);
     }
 
-
+    // 同步执行
     public Map<String, Object> execute(String definitionId, Map<String, Object> variables, long timeout, TimeUnit unit) {
         Chain chain = createChain(definitionId);
         String stateInstanceId = chain.getStateInstanceId();
@@ -149,6 +149,7 @@ public class ChainExecutor {
         result.remove(ChainConsts.CHAIN_STATE_MESSAGE_KEY);
     }
 
+    // 异步执行
     public String executeAsync(String definitionId, Map<String, Object> variables) {
         Chain chain = createChain(definitionId);
         chain.start(variables);
@@ -236,23 +237,26 @@ public class ChainExecutor {
 
 
     private void accept(Trigger trigger, ExecutorService worker) {
+        // ========== 步骤 1: 加载工作流状态 ==========
         ChainState state = chainStateRepository.load(trigger.getStateInstanceId());
         if (state == null) {
             throw new ChainException("Chain state not found");
         }
 
-
+        // ========== 步骤 2: 加载工作流定义 ==========
         ChainDefinition definition = definitionRepository.getChainDefinitionById(state.getChainDefinitionId());
         if (definition == null) {
             throw new ChainException("Chain definition not found");
         }
 
+        // ========== 步骤 3: 创建临时 Chain 实例 ==========
         Chain chain = new Chain(definition, trigger.getStateInstanceId());
         chain.setTriggerScheduler(triggerScheduler);
         chain.setChainStateRepository(chainStateRepository);
         chain.setNodeStateRepository(nodeStateRepository);
         chain.setEventManager(eventManager);
 
+        // ========== 步骤 4: 获取目标节点 ==========
         String nodeId = trigger.getNodeId();
         if (nodeId == null) {
             throw new ChainException("Node ID not found in trigger.");
@@ -263,6 +267,7 @@ public class ChainExecutor {
             throw new ChainException("Node not found in definition(id: " + definition.getId() + ")");
         }
 
+        // ========== 步骤 5: 执行节点 ==========
         chain.executeNode(node, trigger);
     }
 
