@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>dev.tinyflow</groupId>
+    <name>tinyflow-java</name>
+    <artifactId>tinyflow-java</artifactId>
+    <version>2.0.2</version>
+    <packaging>pom</packaging>
+
+    <url>https://tinyflow.dev</url>
+    <description>Tinyflow is an intelligent agent orchestration solution developed using Java. It is not a product,
+        but a development component. By integrating Tinyflow-java, you can make any traditional Java Web application
+        have the ability to orchestrate AI intelligent agents.
+    </description>
+
+    <issueManagement>
+        <system>Github Issue</system>
+        <url>https://github.com/tinyflow-ai/tinyflow-java/issues</url>
+    </issueManagement>
+    <licenses>
+        <license>
+            <name>GNU Lesser General Public License v3.0</name>
+            <url>https://github.com/tinyflow-ai/tinyflow-java/blob/main/LICENSE</url>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <name>Michael Yang</name>
+            <email>fuhai999@gmail.com</email>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>+8</timezone>
+        </developer>
+    </developers>
+    <scm>
+        <url>https://github.com/tinyflow-ai/tinyflow-java</url>
+        <connection>scm:git:https://github.com/tinyflow-ai/tinyflow-java.git</connection>
+        <developerConnection>scm:git:https://github.com/tinyflow-ai/tinyflow-java.git</developerConnection>
+    </scm>
+
+    <modules>
+        <module>tinyflow-core</module>
+        <module>tinyflow-node</module>
+        <module>tinyflow-support-springai</module>
+        <module>tinyflow-support-langchain4j</module>
+        <module>tinyflow-support-agentsflex</module>
+        <module>tinyflow-support-solonai</module>
+    </modules>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <langchain4j.version>1.7.1</langchain4j.version>
+        <agentsflex.version>2.0.8</agentsflex.version>
+        <springai.version>1.0.0-M6</springai.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- 基础核心包 -->
+            <dependency>
+                <groupId>dev.tinyflow</groupId>
+                <artifactId>tinyflow-core</artifactId>
+                <version>2.0.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.agentsflex</groupId>
+                <artifactId>agents-flex-bom</artifactId>
+                <version>${agentsflex.version}</version>
+            </dependency>
+            <dependency>
+                <!-- langchain4j 核心依赖-->
+                <groupId>dev.langchain4j</groupId>
+                <artifactId>langchain4j</artifactId>
+                <version>${langchain4j.version}</version>
+            </dependency>
+            <!--    spring-ai -->
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-core</artifactId>
+                <version>${springai.version}</version>
+            </dependency>
+
+            <!--使用 enjoy 模板引擎-->
+            <dependency>
+                <groupId>com.jfinal</groupId>
+                <artifactId>enjoy</artifactId>
+                <version>5.1.3</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                </configuration>
+            </plugin>
+
+            <!-- Source -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.2.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Javadoc -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.10.4</version>
+                <configuration>
+                    <windowtitle>Tinyflow</windowtitle>
+                    <doctitle>Tinyflow</doctitle>
+                    <show>private</show>
+                    <detectLinks>false</detectLinks>
+                    <detectOfflineLinks>true</detectOfflineLinks>
+                    <linksource>true</linksource>
+                    <additionalparam>-Xdoclint:none</additionalparam>
+                    <detectJavaApiLink>true</detectJavaApiLink>
+                    <source>8</source>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Javadoc -->
+            <!-- Gpg Signature -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.6</version>
+                <executions>
+                    <execution>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.7.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <publishingServerId>central</publishingServerId>
+                    <autoPublish>true</autoPublish>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+
+    <!-- 跳过测试：mvn package -Dmaven.test.skip=true   -->
+    <!-- 检测依赖最新版本：mvn versions:display-dependency-updates  -->
+    <!-- 统一修改版本号：mvn versions:set -DnewVersion=3.0  -->
+    <!-- mvn -N versions:update-child-modules  -->
+    <!-- mvn versions:set -DnewVersion=2.0 -DprocessAllModules=true -DallowSnapshots=true -->
+
+    <!-- mvn clean source:jar install -->
+    <!-- mvn deploy -Dmaven.test.skip=true -e -P release -->
+    <!-- mvn deploy -e -->
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>central</id>
+            <url>https://central.sonatype.com/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+
+</project>
